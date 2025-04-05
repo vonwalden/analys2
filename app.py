@@ -1,3 +1,110 @@
+Aktie Vardering Med Poang
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
 import streamlit as st
 import yfinance as yf
 import pandas as pd
@@ -58,12 +165,12 @@ def fetch_with_scores(tickers):
                 "EPS": eps,
                 "Beta": beta,
                 "P/S": ps,
-                "Tillväxt (%)": round(growth * 100, 1) if growth else None,
-                "Marginal (%)": round(margin * 100, 1) if margin else None,
-                "FCF (MUSD)": round(fcf / 1e6, 1) if fcf else None,
-                "ROE (%)": round(roe * 100, 1) if roe else None,
+                "Tillväxt (%)": round(growth * 100, 1) if growth is not None else None,
+                "Marginal (%)": round(margin * 100, 1) if margin is not None else None,
+                "FCF (MUSD)": round(fcf / 1e6, 1) if fcf is not None else None,
+                "ROE (%)": round(roe * 100, 1) if roe is not None else None,
                 "PEG": peg,
-                "D/E": round(de, 2) if de else None,
+                "D/E": round(de, 2) if de is not None else None,
                 "Utdelning (%)": round(dividend * 100, 2) if dividend else 0
             })
         except Exception as e:
@@ -77,26 +184,31 @@ if st.button("Analysera"):
 
     def highlight(score):
         if score >= 8:
-            return "background-color: #c6f5c6; font-weight: bold"  # Grönt
+            return "background-color: #c6f5c6; font-weight: bold"
         elif score >= 5:
-            return "background-color: #fff3b0;"  # Gult
+            return "background-color: #fff3b0;"
         else:
-            return "background-color: #f9c0c0;"  # Rött
+            return "background-color: #f9c0c0;"
+
+    # Använd formatters som hanterar None-värden
+    def safe_format(val, fmt):
+        return fmt.format(val) if pd.notnull(val) else "–"
 
     styled = df_sorted.style.applymap(highlight, subset=["Poäng (1-10)"]).format({
-        "EPS": "{:.2f}",
-        "Beta": "{:.2f}",
-        "P/S": "{:.2f}",
-        "Tillväxt (%)": "{:.1f}",
-        "Marginal (%)": "{:.1f}",
-        "FCF (MUSD)": "{:.1f}",
-        "ROE (%)": "{:.1f}",
-        "PEG": "{:.2f}",
-        "D/E": "{:.2f}",
-        "Utdelning (%)": "{:.2f}"
+        "EPS": lambda x: safe_format(x, "{:.2f}"),
+        "Beta": lambda x: safe_format(x, "{:.2f}"),
+        "P/S": lambda x: safe_format(x, "{:.2f}"),
+        "Tillväxt (%)": lambda x: safe_format(x, "{:.1f}"),
+        "Marginal (%)": lambda x: safe_format(x, "{:.1f}"),
+        "FCF (MUSD)": lambda x: safe_format(x, "{:.1f}"),
+        "ROE (%)": lambda x: safe_format(x, "{:.1f}"),
+        "PEG": lambda x: safe_format(x, "{:.2f}"),
+        "D/E": lambda x: safe_format(x, "{:.2f}"),
+        "Utdelning (%)": lambda x: safe_format(x, "{:.2f}")
     })
 
     st.dataframe(styled, use_container_width=True)
 
     st.subheader("🔹 Topp 5 aktier enligt poängsystem")
     st.table(df_sorted[['Namn', 'Ticker', 'Poäng (1-10)']].head(5))
+
